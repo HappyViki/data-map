@@ -1,6 +1,28 @@
 const map = d3.select("#map");
 
-d3.json("counties-10m.json").then(function(json) {
+var margin = {
+		top: 20,
+		right: 20,
+		bottom: 30,
+		left: 40
+	},
+	width = 300 - margin.top - margin.bottom,
+	height = 300 - margin.top - margin.bottom;
+
+var x = d3.scaleBand()
+	.range([0, width])
+	.padding(.1);
+var y = d3.scaleLinear()
+	.range([height, 0]);
+
+var svg = d3.select("#graph")
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform",
+		"translate(" + margin.left + "," + margin.top + ")");
+
+d3.json("counties-10m.json").then(function (json) {
 
 	const geojson = topojson.feature(json, json.objects.states)
 
@@ -9,9 +31,9 @@ d3.json("counties-10m.json").then(function(json) {
 	const center = d3.geoCentroid(utah);
 
 	const projection = d3.geoAlbers()
-	.scale(24000)
-	.translate([5000, 1400]),
-	geoPath = d3.geoPath(projection);
+		.scale(24000)
+		.translate([5000, 1400]),
+		geoPath = d3.geoPath(projection);
 
 	const us = map.append("g");
 
@@ -22,7 +44,7 @@ d3.json("counties-10m.json").then(function(json) {
 		.attr("stroke", "red")
 		.attr("d", geoPath);
 
-	d3.json("Pavement_Condition_Utah_Roads_2004-2012.geojson").then(function(geojson) {
+	d3.json("Pavement_Condition_Utah_Roads_2004-2012.geojson").then(function (geojson) {
 
 		const sortedRoadsObj = geojson.features.reduce((result, state) => {
 			if (state.properties.surface_ty === "Asphalt") {
@@ -39,8 +61,8 @@ d3.json("counties-10m.json").then(function(json) {
 			gravel: []
 		});
 		const asphaltRoad = map.append("g"),
-		concreteRoad = map.append("g"),
-		gravelRoad = map.append("g");
+			concreteRoad = map.append("g"),
+			gravelRoad = map.append("g");
 
 		asphaltRoad.selectAll("path")
 			.data(sortedRoadsObj.asphalt)
@@ -58,13 +80,68 @@ d3.json("counties-10m.json").then(function(json) {
 			.enter()
 			.append("path")
 			.attr("stroke", "yellow")
-			.attr("d", geoPath);
+			.attr("d", geoPath)
+			.attr("class", "road")
+			.on("mouseover", function (d) {
+				d3.select("h2").text(d.properties.location);
+			});
 
 		gravelRoad.selectAll("path")
 			.data(sortedRoadsObj.gravel)
 			.enter()
 			.append("path")
 			.attr("stroke", "red")
-			.attr("d", geoPath);
+			.attr("d", geoPath)
+			.attr("class", "road")
+			.on("mouseover", function (d) {
+				d3.select("h2").text(d.properties.location);
+			});
+
+		data = [{
+				"surfaceType": "Gravel",
+				"SurfaceAmount": sortedRoadsObj.gravel.length
+			},
+			{
+				"surfaceType": "Concrete",
+				"SurfaceAmount": sortedRoadsObj.concrete.length
+			},
+			{
+				"surfaceType": "Asphalt",
+				"SurfaceAmount": sortedRoadsObj.asphalt.length
+			}
+		]
+
+		data.forEach(function (d) {
+			d.SurfaceAmount = +d.SurfaceAmount;
+		});
+
+		x.domain(data.map(function (d) {
+			return d.surfaceType;
+		}));
+		y.domain([0, d3.max(data, function (d) {
+			return d.SurfaceAmount;
+		})]);
+
+		svg.selectAll(".bar")
+			.data(data)
+			.enter().append("rect")
+			.attr("class", "bar")
+			.attr("x", function (d) {
+				return x(d.surfaceType);
+			})
+			.attr("width", x.bandwidth())
+			.attr("y", function (d) {
+				return y(d.SurfaceAmount);
+			})
+			.attr("height", function (d) {
+				return height - y(d.SurfaceAmount);
+			});
+
+		svg.append("g")
+			.attr("transform", "translate(0," + height + ")")
+			.call(d3.axisBottom(x));
+
+		svg.append("g")
+			.call(d3.axisLeft(y));
 	});
 });
