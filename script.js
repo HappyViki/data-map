@@ -1,58 +1,70 @@
+const map = d3.select("#map");
 
-$.getJSON( "https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json", function( geojson ) {
+d3.json("counties-10m.json").then(function(json) {
 
-//setup and map parameters
-var projection = d3.geoAlbers()
-var path = d3.geoPath(projection);
+	const geojson = topojson.feature(json, json.objects.states)
 
-//geoJSON data
-geojson = topojson.feature(geojson, geojson.objects.states)
-console.log(geojson);
+	const utah = geojson.features.find(state => state.properties.name === "Utah");
 
-var svg = d3.select("#map");
-svg.selectAll("path")
-.data(geojson.features)
-.enter()
-.append("path")
-.attr("stroke","red")
-.attr("d", path);
-});
+	const center = d3.geoCentroid(utah);
 
-var ctx = document.getElementById('chart');
-var myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [{
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
-                }
-            }]
-        },
-        responsive: true
-    }
+	const projection = d3.geoAlbers()
+	.scale(24000)
+	.translate([5000, 1400]),
+	geoPath = d3.geoPath(projection);
+
+	const us = map.append("g");
+
+	us.selectAll("path")
+		.data(geojson.features)
+		.enter()
+		.append("path")
+		.attr("stroke", "red")
+		.attr("d", geoPath);
+
+	d3.json("Pavement_Condition_Utah_Roads_2004-2012.geojson").then(function(geojson) {
+
+		const sortedRoadsObj = geojson.features.reduce((result, state) => {
+			if (state.properties.surface_ty === "Asphalt") {
+				result.asphalt.push(state)
+			} else if (state.properties.surface_ty === "Concrete") {
+				result.concrete.push(state)
+			} else if (state.properties.surface_ty === "Gravel") {
+				result.gravel.push(state)
+			}
+			return result
+		}, {
+			asphalt: [],
+			concrete: [],
+			gravel: []
+		});
+		const asphaltRoad = map.append("g"),
+		concreteRoad = map.append("g"),
+		gravelRoad = map.append("g");
+
+		asphaltRoad.selectAll("path")
+			.data(sortedRoadsObj.asphalt)
+			.enter()
+			.append("path")
+			.attr("stroke", "green")
+			.attr("d", geoPath)
+			.attr("class", "road")
+			.on("mouseover", function (d) {
+				d3.select("h2").text(d.properties.location);
+			});
+
+		concreteRoad.selectAll("path")
+			.data(sortedRoadsObj.concrete)
+			.enter()
+			.append("path")
+			.attr("stroke", "yellow")
+			.attr("d", geoPath);
+
+		gravelRoad.selectAll("path")
+			.data(sortedRoadsObj.gravel)
+			.enter()
+			.append("path")
+			.attr("stroke", "red")
+			.attr("d", geoPath);
+	});
 });
