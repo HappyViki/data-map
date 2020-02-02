@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Data Map</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Data Map</h1>
+  <div class="buttons">
+    <button type="button" name="button">Generate Report</button>
+    <button type="button" name="button">Alert Setup</button>
+  </div>
+  <h2 class="label"></h2>
+	<div class="container">
+		<svg id="map"></svg>
+		<div class="chart-container">
+    	<canvas id="chart"></canvas>
+		</div>
+	</div>
+	<script
+			  src="https://code.jquery.com/jquery-3.4.1.min.js"
+			  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+			  crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js" charset="utf-8"></script>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<script src="https://d3js.org/d3-array.v1.min.js"></script>
+	<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+	<script src="https://unpkg.com/topojson@3"></script>
+	<script src="script.js" charset="utf-8"></script>
+</html>
