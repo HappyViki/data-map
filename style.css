@@ -8,17 +8,8 @@ body {
 	color: white;
 	font-size: 1rem;
 }
-svg, canvas, .chart-container{
-	width: 100%;
-	height: 100%;
-}
 h2{
-	height: 1rem;
-}
-.container{
-	display: flex;
-	flex-direction: row;
-	height: 100vh;
+	height: 3rem;
 }
 svg{
 	width: 300px;
@@ -40,4 +31,14 @@ svg{
 }
 .code3{
 	background: red;
+}
+@media screen and (max-width: 340px) {
+	.code-container{
+		writing-mode: unset;
+	}
+	.code{
+		padding-right: 1rem;
+		padding-bottom: 0;
+		margin: 0 .5rem;
+	}
 }

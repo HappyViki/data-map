@@ -6,10 +6,11 @@
 </head>
 <body>
   <div class="buttons">
-    <button type="button" name="button">Generate Report</button>
-    <button type="button" name="button">Alert Setup</button>
+    <button type="button" name="button" onclick="alert('*Format data and export to PDF*')">Generate Report</button>
+    <button type="button" name="button" onclick="alert('*Setup email alerts for data changes*')">Alert Setup</button>
+		<span>&lt--- Cosmetic Buttons</span>
   </div>
-  <h2 class="label">Hover over road to see location</h2>
+  <h2 class="label">Hover over road or dots to see location</h2>
 	<svg id="map"></svg>
 	<span class="code-container">
 		<span class="code code1"></span> Asphalt
@@ -18,7 +19,7 @@
 	</span>
 	<svg id="graph"></svg>
 	<span class="code-container">
-		Road Surface <span class="code"></span> <span class="code"></span> <span class="code"></span>
+		Road Surface Count In Utah
 	</span>
 	<script src="https://d3js.org/d3.v5.min.js"></script>
 	<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
