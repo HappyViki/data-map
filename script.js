@@ -157,5 +157,36 @@ d3.json('counties-10m.json').then(function (json) {
       .on('mouseover', function (d) {
         d3.select('h2').text(d.name)
       })
+
+    const car = map.append('g')
+    const drive = projection(locations[0].coords)
+    let distance = 0
+
+    car.selectAll('circle')
+      .data([locations[0]]).enter()
+      .append('circle')
+      .attr('cx', d => projection(d.coords)[0])
+      .attr('cy', d => projection(d.coords)[1])
+      .attr('r', '4px')
+      .attr('fill', 'blue')
+      .on('mouseover', function (d) {
+        d3.select('h2').text(d.name)
+      })
+
+    const counter = setInterval(timer, 1000)
+    function timer () {
+      drive[0] += distance
+      drive[1] += distance
+      distance += 1
+      car.selectAll('circle')
+        .attr('cx', d => drive[0])
+        .attr('cy', d => drive[1])
+      if (distance === 10) {
+        clearInterval(counter)
+        d3.select('h2').text('You have reached your destination!')
+        car.selectAll('circle')
+          .attr('fill', 'purple')
+      }
+    }
   })
 })
