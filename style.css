@@ -23,14 +23,23 @@ svg{
 	margin: .5rem 0;
 	outline: 1px solid black;
 }
-.code1{
-	background: green;
+.asphalt{
+	background: gray;
+	stroke: gray;
 }
-.code2{
-	background: yellow;
+.concrete{
+	background: teal;
+	stroke: teal;
 }
-.code3{
+.gravel{
 	background: red;
+	stroke: red;
+}
+.community{
+	fill:greenyellow;
+}
+.neighborhood{
+	fill:aqua;
 }
 @media screen and (max-width: 340px) {
 	.code-container{

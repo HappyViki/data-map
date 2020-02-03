@@ -33,12 +33,19 @@ const graph = d3.select('#graph')
     'translate(' + margin.left + ',' + margin.top + ')')
 
 d3.json('counties-10m.json').then(function (json) {
-  const geojson = topojson.feature(json, json.objects.states)
+  const geojson = topojson.feature(json, json.objects.counties)
 
-  const projection = d3.geoAlbers()
-    .scale(24000)
-    .translate([5000, 1400])
-  const geoPath = d3.geoPath(projection)
+  const geoPath = d3.geoPath()
+
+  const utah = geojson.features.find(state => state.properties.name === 'Salt Lake')
+
+  const utahCenter = geoPath.centroid(utah)
+
+  const projection = d3.geoMercator()
+    .scale(60000)
+    .translate([150, 150])
+    .center(utahCenter)
+  geoPath.projection(projection)
 
   const us = map.append('g')
 
@@ -48,6 +55,27 @@ d3.json('counties-10m.json').then(function (json) {
     .append('path')
     .attr('stroke', 'red')
     .attr('d', geoPath)
+    .on('mousedown', getCoords)
+
+  function getCoords () {
+	  console.log('x,y', d3.mouse(this))
+  }
+
+	  d3.json('Local_parks_in_Utah.geojson').then(function (geojson) {
+			const parks = map.append('g')
+			console.log(geojson.features);
+
+			parks.selectAll('path')
+				.data(geojson.features)
+				.enter()
+				.append('path')
+				.attr('fill', 'green')
+				.attr('stroke', 'green')
+				.attr('d', geoPath)
+				.attr('class', d => {
+					return d.properties.type.toLowerCase()
+				})
+		})
 
   d3.json('Pavement_Condition_Utah_Roads_2004-2012.geojson').then(function (geojson) {
     const sortedRoadsObj = geojson.features.reduce((result, state) => {
@@ -69,32 +97,14 @@ d3.json('counties-10m.json').then(function (json) {
     const gravelRoad = map.append('g')
 
     asphaltRoad.selectAll('path')
-      .data(sortedRoadsObj.asphalt)
+      .data(geojson.features)
       .enter()
       .append('path')
-      .attr('stroke', 'green')
       .attr('d', geoPath)
-      .on('mouseover', function (d) {
-        d3.select('h2').text(d.properties.location)
-      })
-
-    concreteRoad.selectAll('path')
-      .data(sortedRoadsObj.concrete)
-      .enter()
-      .append('path')
-      .attr('stroke', 'yellow')
-      .attr('d', geoPath)
-      .on('mouseover', function (d) {
-        d3.select('h2').text(d.properties.location)
-      })
-
-    gravelRoad.selectAll('path')
-      .data(sortedRoadsObj.gravel)
-      .enter()
-      .append('path')
-      .attr('stroke', 'red')
-      .attr('d', geoPath)
-      .on('mouseover', function (d) {
+			.attr('class', d => {
+				return d.properties.surface_ty.toLowerCase()
+			})
+      .on('mouseover', d => {
         d3.select('h2').text(d.properties.location)
       })
 
@@ -159,8 +169,6 @@ d3.json('counties-10m.json').then(function (json) {
       })
 
     const car = map.append('g')
-    const drive = projection(locations[0].coords)
-    let distance = 0
 
     car.selectAll('circle')
       .data([locations[0]]).enter()
@@ -168,25 +176,37 @@ d3.json('counties-10m.json').then(function (json) {
       .attr('cx', d => projection(d.coords)[0])
       .attr('cy', d => projection(d.coords)[1])
       .attr('r', '4px')
+			.attr('stroke', 'black')
       .attr('fill', 'blue')
       .on('mouseover', function (d) {
-        d3.select('h2').text(d.name)
+        d3.select('h2').text('You drove from ' + d.name)
       })
 
+    const carLocations = [
+      [188, 73.16667175292969], [229, 83.16667175292969],[188, 73.16667175292969], [127, 74.16667175292969], [85, 72.16667175292969], [79, 54.16667175292969],
+      projection(locations[1].coords)]
+    let currentLocation = 0
     const counter = setInterval(timer, 1000)
     function timer () {
-      drive[0] += distance
-      drive[1] += distance
-      distance += 1
-      car.selectAll('circle')
-        .attr('cx', d => drive[0])
-        .attr('cy', d => drive[1])
-      if (distance === 10) {
-        clearInterval(counter)
+      if (currentLocation === carLocations.length) {
         d3.select('h2').text('You have reached your destination!')
         car.selectAll('circle')
           .attr('fill', 'purple')
-      }
+        clearInterval(counter)
+      } else {
+				const x = carLocations[currentLocation][0]
+				const y = carLocations[currentLocation][1]
+				if (x === carLocations[1][0] && y === carLocations[1][1]) {
+					d3.select('h2').text('Recharged!')
+					car.selectAll('circle')
+					.attr('fill', 'green')
+				}
+				car.selectAll('circle')
+					.attr('cx', d => x)
+					.attr('cy', d => y)
+					currentLocation += 1;
+
+			}
     }
   })
 })
