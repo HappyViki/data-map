@@ -22,12 +22,11 @@ const height = 300 - margin.top - margin.bottom
 
 const x = d3.scaleBand()
   .range([0, width])
-  .padding(0.1); const y = d3.scaleLinear()
+  .padding(0.1);
+const y = d3.scaleLinear()
   .range([height, 0])
 
 const graph = d3.select('#graph')
-  .attr('width', width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
   .append('g')
   .attr('transform',
     'translate(' + margin.left + ',' + margin.top + ')')
@@ -42,8 +41,8 @@ d3.json('counties-10m.json').then(function (json) {
   const utahCenter = geoPath.centroid(utah)
 
   const projection = d3.geoMercator()
-    .scale(10000)
-    .translate([150, 150])
+    .scale(60000)
+    .translate([150, 250])
     .center(utahCenter)
   geoPath.projection(projection)
 
@@ -58,12 +57,11 @@ d3.json('counties-10m.json').then(function (json) {
     .on('mousedown', getCoords)
 
   function getCoords () {
-	  console.log('x,y', d3.mouse(this))
+	  console.log('x,y', projection.invert(d3.mouse(this)))
   }
 
 	  d3.json('Local_parks_in_Utah.geojson').then(function (geojson) {
 			const parks = map.append('g')
-			console.log(geojson.features);
 
 			parks.selectAll('path')
 				.data(geojson.features)
@@ -78,25 +76,36 @@ d3.json('counties-10m.json').then(function (json) {
 		})
 
   d3.json('Pavement_Condition_Utah_Roads_2004-2012.geojson').then(function (geojson) {
-    const sortedRoadsObj = geojson.features.reduce((result, state) => {
-      if (state.properties.surface_ty === 'Asphalt') {
-        result.asphalt.push(state)
-      } else if (state.properties.surface_ty === 'Concrete') {
-        result.concrete.push(state)
-      } else if (state.properties.surface_ty === 'Gravel') {
-        result.gravel.push(state)
-      }
-      return result
-    }, {
-      asphalt: [],
-      concrete: [],
-      gravel: []
-    })
-    const asphaltRoad = map.append('g')
-    const concreteRoad = map.append('g')
-    const gravelRoad = map.append('g')
+    const data = [{
+      surfaceType: 'Gravel',
+      SurfaceAmount: 0
+    },
+    {
+      surfaceType: 'Concrete',
+      SurfaceAmount: 0
+    },
+    {
+      surfaceType: 'Asphalt',
+      SurfaceAmount: 0
+    }
+    ]
 
-    asphaltRoad.selectAll('path')
+    geojson.features.forEach((state) => {
+      switch (state.properties.surface_ty){
+        case 'Asphalt':
+        data[2].SurfaceAmount++;
+        break;
+        case 'Concrete':
+        data[1].SurfaceAmount++;
+        break;
+        case 'Gravel':
+        data[0].SurfaceAmount++;
+        break;
+      }
+    })
+    const road = map.append('g')
+
+    road.selectAll('path')
       .data(geojson.features)
       .enter()
       .append('path')
@@ -107,20 +116,6 @@ d3.json('counties-10m.json').then(function (json) {
       .on('mouseover', d => {
         d3.select('h2').text(d.properties.location)
       })
-
-    const data = [{
-      surfaceType: 'Gravel',
-      SurfaceAmount: sortedRoadsObj.gravel.length
-    },
-    {
-      surfaceType: 'Concrete',
-      SurfaceAmount: sortedRoadsObj.concrete.length
-    },
-    {
-      surfaceType: 'Asphalt',
-      SurfaceAmount: sortedRoadsObj.asphalt.length
-    }
-    ]
 
     data.forEach(function (d) {
       d.SurfaceAmount = +d.SurfaceAmount
@@ -183,12 +178,17 @@ d3.json('counties-10m.json').then(function (json) {
       })
 
     const carLocations = [
-      [188, 73.16667175292969], [229, 83.16667175292969],[188, 73.16667175292969], [127, 74.16667175292969], [85, 72.16667175292969], [79, 54.16667175292969],
-      projection(locations[1].coords)]
+      [-111.89099517345123, 40.727830376976804],
+      [-111.88980151137802, 40.70053668000986],
+      [-111.92561137357372, 40.69999370844943],
+      [-111.97646137789157, 40.69782177794881],
+      [-111.98290715308679, 40.727136864475355],
+      locations[1].coords].map(coords=>projection(coords))
     let currentLocation = 0
     const counter = setInterval(timer, 1000)
+
     function timer () {
-      if (currentLocation === carLocations.length) {
+      if (!carLocations[currentLocation]) {
         d3.select('h2').text('You have reached your destination!')
         car.selectAll('circle')
           .attr('fill', 'purple')
@@ -196,11 +196,6 @@ d3.json('counties-10m.json').then(function (json) {
       } else {
 				const x = carLocations[currentLocation][0]
 				const y = carLocations[currentLocation][1]
-				if (x === carLocations[1][0] && y === carLocations[1][1]) {
-					d3.select('h2').text('Recharged!')
-					car.selectAll('circle')
-					.attr('fill', 'green')
-				}
 				car.selectAll('circle')
 					.attr('cx', d => x)
 					.attr('cy', d => y)
