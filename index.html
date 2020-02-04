@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Data Map</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="buttons">
+    <button type="button" name="button" onclick="alert('*Format data and export to PDF*')">Generate Report</button>
+    <button type="button" name="button" onclick="alert('*Setup email alerts for data changes*')">Alert Setup</button>
+		<span>&lt--- Cosmetic Buttons</span>
+  </div>
+  <h2 class="label">Hover over road or dots to see location</h2>
+	<svg id="map"></svg>
+	<span class="code-container">
+		<span class="code asphalt"></span> Asphalt
+		<span class="code concrete"></span> Concrete
+		<span class="code gravel"></span> Gravel
+	</span>
+	<svg id="graph"></svg>
+	<span class="code-container">
+		Road Surface Count In Utah
+	</span>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+	<script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+	<script src="https://d3js.org/d3-array.v1.min.js"></script>
+	<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+	<script src="https://unpkg.com/topojson@3"></script>
+	<script src="script.js" charset="utf-8"></script>
+</html>
