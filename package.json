@@ -1,0 +1,23 @@
+{
+  "name": "data-map",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "deploy":"node deploy.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HappyViki/data-map.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HappyViki/data-map/issues"
+  },
+  "homepage": "https://github.com/HappyViki/data-map#readme",
+  "devDependencies": {
+    "gh-pages": "^2.2.0"
+  }
+}

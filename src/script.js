@@ -42,7 +42,7 @@ d3.json('counties-10m.json').then(function (json) {
   const utahCenter = geoPath.centroid(utah)
 
   const projection = d3.geoMercator()
-    .scale(60000)
+    .scale(10000)
     .translate([150, 150])
     .center(utahCenter)
   geoPath.projection(projection)
